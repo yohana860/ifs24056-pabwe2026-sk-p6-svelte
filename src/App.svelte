@@ -1,5 +1,4 @@
 <script>
-  import { onMount } from "svelte";
   import { currentPath, resolveRoute, navigate } from "./router";
   import { getAccessToken } from "./helpers/apiHelper";
   import AuthLayout from "./features/auth/layouts/AuthLayout.svelte";
@@ -18,7 +17,7 @@
     $currentPath === "/auth/login" || $currentPath === "/auth/register"
   );
 
-  // Guard: kalau bukan halaman auth dan tidak ada token, tendang ke login
+  // Guard: cek token langsung dari localStorage (bukan store)
   $effect(() => {
     if (typeof window === "undefined") return;
     const token = getAccessToken();

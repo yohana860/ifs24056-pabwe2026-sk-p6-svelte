@@ -1,7 +1,7 @@
 import { writable } from "svelte/store";
 import { putAccessToken, getAccessToken } from "../../../helpers/apiHelper";
 
-// Init dari localStorage supaya tidak reset saat page reload
+// Baca token dari localStorage saat init
 const initialState = {
   isAuthenticated: !!getAccessToken(),
   user: null,
@@ -12,17 +12,13 @@ function createAuthStore() {
 
   return {
     subscribe,
-    setAuth: (user) =>
-      update((state) => ({ ...state, isAuthenticated: true, user })),
+    setAuth: (user, token) => {
+      if (token) putAccessToken(token);
+      update((state) => ({ ...state, isAuthenticated: true, user }));
+    },
     clearAuth: () => {
       putAccessToken(null);
       set({ isAuthenticated: false, user: null });
-    },
-    restore: () => {
-      const token = getAccessToken();
-      if (token) {
-        update((state) => ({ ...state, isAuthenticated: true }));
-      }
     },
     reset: () => set({ isAuthenticated: false, user: null }),
   };

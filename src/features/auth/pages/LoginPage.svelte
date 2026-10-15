@@ -3,6 +3,7 @@
   import { authStore } from "../states/authStore";
   import { usersStore } from "../../users/states/usersStore";
   import apiHelper from "../../../helpers/apiHelper";
+  import { navigate } from "../../../router.js";
 
   let email = "";
   let password = "";
@@ -22,6 +23,9 @@
     loading = false;
     authStore.setIsAuthLogin(false);
     usersStore.setIsProfile(false);
+    if (usersStore.profile) {
+      navigate("/");
+    }
   }
 
   async function onSubmitHandler() {

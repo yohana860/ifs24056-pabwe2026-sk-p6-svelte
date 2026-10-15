@@ -3,29 +3,31 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { svelteTesting } from "@testing-library/svelte/vite";
 import tailwindcss from "@tailwindcss/vite";
 import process from "process";
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
+
+  // Fallback ke open-api PRODUCTION, bukan localhost
+  const baseUrl =
+    env.VITE_DELCOM_BASEURL || "https://open-api.delcom.org/api/v1";
+
   return {
     plugins: [
-      svelte({
-        prebundleSvelteLibraries: false,
-      }),
+      svelte({ prebundleSvelteLibraries: false }),
       tailwindcss(),
       svelteTesting(),
     ],
     server: {
-      port: Number(env.APP_PORT) || 3000,
+      port: Number(env.APP_PORT) || 3004,
     },
     preview: {
-      port: Number(env.APP_PORT) || 3000,
+      port: Number(env.APP_PORT) || 3004,
     },
     build: {
       chunkSizeWarningLimit: 1500,
     },
     define: {
-      DELCOM_BASEURL: JSON.stringify(
-        env.VITE_DELCOM_BASEURL || "http://localhost:8000/api/v1"
-      ),
+      DELCOM_BASEURL: JSON.stringify(baseUrl),
     },
     test: {
       globals: true,

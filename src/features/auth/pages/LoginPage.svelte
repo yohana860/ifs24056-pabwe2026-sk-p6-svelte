@@ -3,7 +3,6 @@
   import { authStore } from "../states/authStore";
   import {
     putAccessToken,
-    getAccessToken,
     default as apiHelper,
   } from "../../../helpers/apiHelper";
   import {
@@ -58,11 +57,16 @@
 
 <form onsubmit={handleSubmit} class="space-y-4">
   <div>
-    <label for="email" class="block text-sm font-medium text-slate-700 mb-1">
+    <label
+      for="login-email-input"
+      class="block text-sm font-medium text-slate-700 mb-1"
+    >
       Email
     </label>
     <input
-      id="email"
+      id="login-email-input"
+      data-testid="login-email-input"
+      name="username"
       type="email"
       required
       value={$email}
@@ -73,11 +77,16 @@
   </div>
 
   <div>
-    <label for="password" class="block text-sm font-medium text-slate-700 mb-1">
+    <label
+      for="login-password-input"
+      class="block text-sm font-medium text-slate-700 mb-1"
+    >
       Password
     </label>
     <input
-      id="password"
+      id="login-password-input"
+      data-testid="login-password-input"
+      name="password"
       type="password"
       required
       value={$password}
@@ -88,6 +97,8 @@
   </div>
 
   <button
+    id="login-submit-button"
+    data-testid="login-submit-button"
     type="submit"
     disabled={loading}
     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"

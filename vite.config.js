@@ -6,8 +6,6 @@ import process from "process";
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "");
-
-  // Fallback ke open-api PRODUCTION, bukan localhost
   const baseUrl =
     env.VITE_DELCOM_BASEURL || "https://open-api.delcom.org/api/v1";
 
@@ -17,14 +15,23 @@ export default defineConfig(({ mode }) => {
       tailwindcss(),
       svelteTesting(),
     ],
-    server: {
-      port: Number(env.APP_PORT) || 3004,
-    },
-    preview: {
-      port: Number(env.APP_PORT) || 3004,
-    },
+    server: { port: Number(env.APP_PORT) || 3004 },
+    preview: { port: Number(env.APP_PORT) || 3004 },
     build: {
       chunkSizeWarningLimit: 1500,
+      cssCodeSplit: true,
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules")) {
+              if (id.includes("lucide-svelte")) return "icons";
+              if (id.includes("sweetalert2")) return "sweetalert";
+              if (id.includes("svelte")) return "svelte-core";
+              return "vendor";
+            }
+          },
+        },
+      },
     },
     define: {
       DELCOM_BASEURL: JSON.stringify(baseUrl),

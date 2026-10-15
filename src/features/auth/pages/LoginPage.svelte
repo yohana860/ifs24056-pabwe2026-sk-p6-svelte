@@ -1,8 +1,11 @@
 <script>
   import useInput from "../../../hooks/useInput";
-  import { login } from "../api/authApi";
   import { authStore } from "../states/authStore";
-  import { putAccessToken, getAccessToken } from "../../../helpers/apiHelper";
+  import {
+    putAccessToken,
+    getAccessToken,
+    default as apiHelper,
+  } from "../../../helpers/apiHelper";
   import {
     showErrorDialog,
     showSuccessDialog,
@@ -18,39 +21,30 @@
     event.preventDefault();
     loading = true;
     try {
-      const res = await login({ email: $email, password: $password });
-      console.log("LOGIN RESPONSE:", res);
+      const res = await apiHelper.post("/auth/login", {
+        email: $email,
+        password: $password,
+      });
 
       if (res.status !== "success") {
         await showErrorDialog(res.message || "Login gagal");
         return;
       }
 
-      // Cari token dari berbagai kemungkinan key
       const d = res.data || {};
       const token =
         d.accessToken ||
         d.token ||
         d.access_token ||
-        (d.data && (d.data.accessToken || d.data.token)) ||
-        res.accessToken ||
-        res.token;
-
-      console.log("TOKEN:", token);
+        (d.data && (d.data.accessToken || d.data.token));
 
       if (!token) {
         await showErrorDialog("Token tidak ditemukan di response");
         return;
       }
 
-      // 1. Simpan token ke localStorage DULU
       putAccessToken(token);
-
-      // 2. Baru update store (dengan token sebagai arg kedua)
       authStore.setAuth({ email: $email }, token);
-
-      // 3. Verifikasi token benar-benar tersimpan
-      console.log("TOKEN DI STORAGE:", getAccessToken());
 
       await showSuccessDialog("Login berhasil");
       navigate("/");

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Font-display fallback untuk mencegah FOIT (Flash of Invisible Text) */
+/* Font-display fallback */
 @font-face {
   font-family: "Plus Jakarta Sans";
   font-display: swap;
@@ -8,59 +8,24 @@
 
 @layer base {
   html {
-    /* Smooth scrolling + text rendering yang lebih halus */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    scroll-behavior: smooth;
   }
 
   body {
     font-family: "Plus Jakarta Sans", system-ui, -apple-system,
       BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
       sans-serif;
-    /* Pastikan kontras default body memenuhi WCAG AA */
-    color: #0f172a; /* slate-900 */
-    background-color: #f8fafc; /* slate-50 */
+    color: #0f172a;
+    background-color: #f8fafc;
   }
 
-  /* Fokus outline untuk aksesibilitas keyboard (WCAG 2.4.7) */
+  /* Focus outline untuk aksesibilitas keyboard */
   :focus-visible {
     outline: 2px solid #2563eb;
     outline-offset: 2px;
   }
 
-  /* Heading hierarchy */
-  h1 {
-    font-size: 1.875rem; /* text-3xl */
-    font-weight: 700;
-    line-height: 1.2;
-    color: #2563eb; /* blue-600 - kontras AA */
-  }
-
-  h2 {
-    font-size: 1.5rem; /* text-2xl */
-    font-weight: 700;
-    line-height: 1.3;
-    color: #2563eb;
-  }
-
-  h3 {
-    font-size: 1.25rem; /* text-xl */
-    font-weight: 600;
-    color: #1e293b; /* slate-800 */
-  }
-
-  /* Link default: warna dengan kontras cukup */
-  a {
-    color: #2563eb;
-    text-decoration: none;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  /* Semua elemen interaktif harus cursor pointer */
   button,
   a,
   [role="button"],
@@ -71,49 +36,39 @@
     cursor: pointer;
   }
 
-  /* Tombol disabled */
   button:disabled,
   [role="button"]:disabled {
     cursor: not-allowed;
     opacity: 0.6;
   }
 
-  /* Input, select, textarea - minimal kontras */
-  input,
-  select,
-  textarea {
-    color: #0f172a;
-    background-color: #ffffff;
-  }
-
   input::placeholder,
   textarea::placeholder {
-    color: #64748b; /* slate-500 - kontras cukup untuk placeholder */
+    color: #64748b;
   }
+}
 
-  /* Override utilitas Tailwind yang gagal kontras */
-  /* text-slate-400 → terlalu terang, naikkan ke slate-500 */
-  .text-slate-400 {
-    color: #64748b !important; /* slate-500 */
-  }
+/* ============================================
+   KONTRAST WCAG AA OVERRIDES
+   Naikkan warna text-slate-400 → slate-600
+   dan text-slate-500 → slate-700 agar lolos
+   minimum contrast ratio 4.5:1
+   ============================================ */
 
-  /* text-slate-500 → naikkan ke slate-600 */
-  .text-slate-500 {
-    color: #475569 !important; /* slate-600 */
-  }
+/* text-slate-400 terlalu terang → naikkan ke slate-600 */
+.text-slate-400 {
+  color: #475569 !important;
+}
 
-  /* text-blue-500 → naikkan ke blue-600 */
-  .text-blue-500 {
-    color: #2563eb !important;
-  }
+/* text-slate-500 → slate-700 untuk margin aman */
+.text-slate-500 {
+  color: #334155 !important;
+}
 
-  /* Background biru dengan teks putih - pastikan kontras */
-  .bg-blue-600 {
-    background-color: #2563eb;
-  }
+/* text-slate-600 sudah aman, tidak perlu override */
 
-  /* Perbaikan untuk SweetAlert2 (kalau mau konsisten) */
-  .swal2-popup {
-    font-family: "Plus Jakarta Sans", system-ui, sans-serif !important;
-  }
+/* Background slate-100 + text-slate-500 yang gagal → perbaiki */
+.bg-slate-100 .text-slate-500,
+.bg-slate-100.text-slate-500 {
+  color: #334155 !important;
 }

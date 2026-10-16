@@ -1,112 +1,116 @@
 <script>
-  import { Mail, Lock, LoaderCircle, LogIn } from "lucide-svelte";
+  import useInput from "../../../hooks/useInput";
   import { authStore } from "../states/authStore";
-  import { usersStore } from "../../users/states/usersStore";
-  import apiHelper from "../../../helpers/apiHelper";
-  import { navigate } from "../../../router.js";
+  import {
+    putAccessToken,
+    default as apiHelper,
+  } from "../../../helpers/apiHelper";
+  import { showErrorDialog } from "../../../helpers/toolsHelper";
+  import { navigate } from "../../../router";
 
-  let email = "";
-  let password = "";
-  let loading = false;
+  const { input: email, handleChange: handleEmail } = useInput("");
+  const { input: password, handleChange: handlePassword } = useInput("");
 
-  $: if ($authStore.isAuthLogin === true) {
-    const authToken = apiHelper.getAccessToken();
-    if (authToken) {
-      usersStore.asyncSetProfile();
-      navigate("/");
-    } else {
-      loading = false;
-      authStore.setIsAuthLogin(false);
-    }
-  }
+  let loading = $state(false);
 
-  $: if ($usersStore.isProfile) {
-    loading = false;
-    authStore.setIsAuthLogin(false);
-    usersStore.setIsProfile(false);
-    if (usersStore.profile) {
-      navigate("/");
-    }
-  }
-
-  async function onSubmitHandler() {
-
+  async function handleSubmit(event) {
+    event.preventDefault();
     loading = true;
     try {
-      await authStore.asyncSetIsAuthLogin(email, password);
-      if (!apiHelper.getAccessToken()) {
-        loading = false;
+      const res = await apiHelper.post("/auth/login", {
+        email: $email,
+        password: $password,
+      });
+
+      if (res.status !== "success") {
+        await showErrorDialog(res.message || "Login gagal");
+        return;
       }
-    } catch {
+
+      const d = res.data || {};
+      const token =
+        d.accessToken ||
+        d.token ||
+        d.access_token ||
+        (d.data && (d.data.accessToken || d.data.token));
+
+      if (!token) {
+        await showErrorDialog("Token tidak ditemukan di response");
+        return;
+      }
+
+      putAccessToken(token);
+      authStore.setAuth({ email: $email }, token);
+
+      // ✅ NAVIGATE LANGSUNG — tanpa nunggu dialog
+      navigate("/");
+    } catch (err) {
+      await showErrorDialog(err.message || "Terjadi kesalahan");
+    } finally {
       loading = false;
     }
   }
 </script>
 
-<form on:submit|preventDefault={onSubmitHandler} class="space-y-4">
+<form onsubmit={handleSubmit} class="space-y-4">
   <div>
-    <label for="login-email-input" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-      Alamat Email
-    </label>
-    <div class="relative">
-      <Mail
-        size={18}
-        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-      />
-      <input
-        type="email"
-        id="login-email-input"
-        data-testid="login-email-input"
-        name="username"
-        autocomplete="username"
-        bind:value={email}
-        placeholder="nama@email.com"
-        class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
-        required
-
-      />
-    </div>
-  </div>
-
-  <div>
-    <label for="login-password-input" class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1.5">
-      Kata Sandi
-    </label>
-    <div class="relative">
-      <Lock
-        size={18}
-        class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-      />
-      <input
-        type="password"
-        id="login-password-input"
-        data-testid="login-password-input"
-        name="password"
-        autocomplete="current-password"
-        bind:value={password}
-        placeholder="••••••••"
-        class="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all"
-        required
-      />
-    </div>
-  </div>
-
-  <div class="pt-2">
-    <button
-      type="submit"
-      id="login-submit-button"
-      data-testid="login-submit-button"
-
-      disabled={loading}
-      class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 rounded-xl shadow-md shadow-indigo-600/25 transition-all disabled:opacity-60"
+    <label
+      for="login-email-input"
+      class="block text-sm font-medium text-slate-700 mb-1"
     >
-      {#if loading}
-        <LoaderCircle size={18} class="animate-spin" />
-        <span>Sedang Masuk...</span>
-      {:else}
-        <LogIn size={18} strokeWidth={2.5} />
-        <span>Masuk Sekarang</span>
-      {/if}
-    </button>
+      Email
+    </label>
+    <input
+      id="login-email-input"
+      data-testid="login-email-input"
+      name="username"
+      type="email"
+      required
+      value={$email}
+      oninput={handleEmail}
+      class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      placeholder="kamu@email.com"
+    />
   </div>
+
+  <div>
+    <label
+      for="login-password-input"
+      class="block text-sm font-medium text-slate-700 mb-1"
+    >
+      Password
+    </label>
+    <input
+      id="login-password-input"
+      data-testid="login-password-input"
+      name="password"
+      type="password"
+      required
+      value={$password}
+      oninput={handlePassword}
+      class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      placeholder="••••••••"
+    />
+  </div>
+
+  <button
+    id="login-submit-button"
+    data-testid="login-submit-button"
+    type="submit"
+    disabled={loading}
+    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition disabled:opacity-50"
+  >
+    {loading ? "Memproses..." : "Masuk"}
+  </button>
+
+  <p class="text-center text-sm text-slate-500">
+    Belum punya akun?
+    <button
+      type="button"
+      onclick={() => navigate("/auth/register")}
+      class="text-blue-600 font-semibold hover:underline"
+    >
+      Daftar
+    </button>
+  </p>
 </form>

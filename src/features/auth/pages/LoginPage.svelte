@@ -1,10 +1,7 @@
 <script>
   import useInput from "../../../hooks/useInput";
   import { authStore } from "../states/authStore";
-  import {
-    putAccessToken,
-    default as apiHelper,
-  } from "../../../helpers/apiHelper";
+  import apiHelper from "../../../helpers/apiHelper";
   import { showErrorDialog } from "../../../helpers/toolsHelper";
   import { navigate } from "../../../router";
 
@@ -39,10 +36,11 @@
         return;
       }
 
-      putAccessToken(token);
+      // ✅ Pakai method dari default export
+      apiHelper.putAccessToken(token);
       authStore.setAuth({ email: $email }, token);
 
-      // ✅ NAVIGATE LANGSUNG — tanpa nunggu dialog
+      // ✅ Navigate LANGSUNG tanpa nunggu dialog
       navigate("/");
     } catch (err) {
       await showErrorDialog(err.message || "Terjadi kesalahan");

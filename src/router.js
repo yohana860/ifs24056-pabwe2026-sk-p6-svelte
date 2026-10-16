@@ -1,18 +1,32 @@
 import { writable, derived } from "svelte/store";
 
-export const currentPath = writable(window.location.pathname);
+function normalizePath(path) {
+  if (!path) return "/";
+  // Hapus trailing slash kecuali untuk root
+  if (path.length > 1 && path.endsWith("/")) {
+    return path.slice(0, -1);
+  }
+  return path;
+}
 
-window.addEventListener("popstate", () => {
-  currentPath.set(window.location.pathname);
-});
+export const currentPath = writable(
+  normalizePath(typeof window !== "undefined" ? window.location.pathname : "/")
+);
+
+if (typeof window !== "undefined") {
+  window.addEventListener("popstate", () => {
+    currentPath.set(normalizePath(window.location.pathname));
+  });
+}
 
 export function navigate(to, options = {}) {
+  const normalized = normalizePath(to);
   if (options.replace) {
-    window.history.replaceState({}, "", to);
+    window.history.replaceState({}, "", normalized);
   } else {
-    window.history.pushState({}, "", to);
+    window.history.pushState({}, "", normalized);
   }
-  currentPath.set(to);
+  currentPath.set(normalized);
 }
 
 export const router = {
@@ -30,12 +44,14 @@ export const routes = [
 ];
 
 export function matchPath(pattern, path) {
-  const cleanPath = path === "" ? "/" : path;
-  if (pattern === cleanPath) {
+  const cleanPath = normalizePath(path);
+  const cleanPattern = normalizePath(pattern);
+
+  if (cleanPattern === cleanPath) {
     return { matches: true, params: {} };
   }
 
-  const patternSegments = pattern.split("/").filter(Boolean);
+  const patternSegments = cleanPattern.split("/").filter(Boolean);
   const pathSegments = cleanPath.split("/").filter(Boolean);
 
   if (patternSegments.length !== pathSegments.length) {
@@ -58,7 +74,7 @@ export function matchPath(pattern, path) {
 }
 
 export function resolveRoute(path, routesList = routes) {
-  const cleanPath = path === "" ? "/" : path;
+  const cleanPath = normalizePath(path);
   for (const route of routesList) {
     const match = matchPath(route.pattern, cleanPath);
     if (match) {

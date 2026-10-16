@@ -1,52 +1,37 @@
 <script>
-  import { currentPath, resolveRoute, navigate } from "./router";
-  import { getAccessToken } from "./helpers/apiHelper";
+  import { currentRoute } from "./router.js";
   import AuthLayout from "./features/auth/layouts/AuthLayout.svelte";
   import LoginPage from "./features/auth/pages/LoginPage.svelte";
   import RegisterPage from "./features/auth/pages/RegisterPage.svelte";
-  import UsersPage from "./features/users/pages/UsersPage.svelte";
-  import ProfilePage from "./features/users/pages/ProfilePage.svelte";
-  import NotFoundPage from "./features/common/pages/NotFoundPage.svelte";
   import LinkTreeLayout from "./features/linktrees/layouts/LinkTreeLayout.svelte";
   import HomePage from "./features/linktrees/pages/HomePage.svelte";
   import DetailPage from "./features/linktrees/pages/DetailPage.svelte";
-
-  const route = $derived(resolveRoute($currentPath));
-
-  const isAuthPage = $derived(
-    $currentPath === "/auth/login" || $currentPath === "/auth/register"
-  );
-
-  // Guard: cek token langsung dari localStorage (bukan store)
-  $effect(() => {
-    if (typeof window === "undefined") return;
-    const token = getAccessToken();
-    if (!isAuthPage && !token) {
-      navigate("/auth/login");
-    }
-  });
+  import UsersPage from "./features/users/pages/UsersPage.svelte";
+  import ProfilePage from "./features/users/pages/ProfilePage.svelte";
+  import NotFoundPage from "./features/common/pages/NotFoundPage.svelte";
 </script>
 
-{#if isAuthPage}
+{#if $currentRoute.layout === 'auth'}
   <AuthLayout>
-    {#if route.page === "login"}
+    {#if $currentRoute.name === 'login'}
       <LoginPage />
-    {:else if route.page === "register"}
+    {:else}
       <RegisterPage />
     {/if}
   </AuthLayout>
-{:else}
+{:else if $currentRoute.layout === 'linktree'}
   <LinkTreeLayout>
-    {#if route.page === "home"}
+    {#if $currentRoute.name === 'home'}
       <HomePage />
-    {:else if route.page === "detail"}
-      <DetailPage linkTreeId={route.params.linkTreeId} />
-    {:else if route.page === "users"}
+    {:else if $currentRoute.name === 'linktree-detail'}
+      <DetailPage linkTreeId={$currentRoute.params.linkTreeId} />
+    {:else if $currentRoute.name === 'users'}
       <UsersPage />
-    {:else if route.page === "profile"}
-      <ProfilePage />
     {:else}
-      <NotFoundPage />
+      <ProfilePage />
     {/if}
+
   </LinkTreeLayout>
+{:else}
+  <NotFoundPage />
 {/if}

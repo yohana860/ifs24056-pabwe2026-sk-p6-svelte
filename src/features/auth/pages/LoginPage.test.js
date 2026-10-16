@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import LoginPage from "./LoginPage.svelte";
 import { renderWithProviders } from "../../../test-utils";
 import apiHelper from "../../../helpers/apiHelper";
+import * as routerModule from "../../../router";
 
 describe("LoginPage", () => {
   beforeEach(() => {
@@ -29,6 +30,7 @@ describe("LoginPage", () => {
     await form.trigger("submit");
 
     expect(loginSpy).toHaveBeenCalledWith("testing@delcom.org", "123456");
+
   });
 
   it("should handle submit when token is present", async () => {
@@ -61,6 +63,7 @@ describe("LoginPage", () => {
       preloadedState: {
         isAuthLogin: false,
         isProfile: false,
+
       },
     });
 
@@ -93,10 +96,14 @@ describe("LoginPage", () => {
       .spyOn(usersStore, "asyncSetProfile")
       .mockReturnValue(Promise.resolve());
 
+
+    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
+
     authStore.setIsAuthLogin(true);
     await new Promise((r) => setTimeout(r, 10));
 
     expect(setProfileSpy).toHaveBeenCalled();
+    expect(navSpy).toHaveBeenCalledWith("/");
   });
 
   it("should reset state when login fails or when isProfile finishes", async () => {
@@ -121,5 +128,19 @@ describe("LoginPage", () => {
     usersStore.setIsProfile(true);
     await new Promise((r) => setTimeout(r, 10));
     expect(setIsProfileSpy).toHaveBeenCalledWith(false);
+  });
+
+
+  it("should navigate to home once the profile is loaded after login", async () => {
+    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
+    const { usersStore } = renderWithProviders(LoginPage, {
+      preloadedState: { profile: { id: 1, name: "A" }, isProfile: false },
+    });
+    navSpy.mockClear();
+
+    usersStore.setIsProfile(true);
+    await new Promise((r) => setTimeout(r, 10));
+
+    expect(navSpy).toHaveBeenCalledWith("/");
   });
 });

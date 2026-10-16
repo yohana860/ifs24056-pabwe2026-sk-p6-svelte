@@ -43,7 +43,7 @@ describe("RegisterPage", () => {
     await wrapper.find('[data-testid="register-name-input"]').setValue("Abdul");
     await wrapper.find('[data-testid="register-email-input"]').setValue("abdul@del.org");
     await wrapper.find('[data-testid="register-password-input"]').setValue("pass1");
-    await wrapper.find('[data-testid="register-password-confirm-input"]').setValue("pass2");
+    await wrapper.find('[data-testid="register-confirm-password-input"]').setValue("pass2");
     await wrapper.find("form").trigger("submit");
     expect(errorSpy).toHaveBeenCalledWith("Konfirmasi kata sandi tidak cocok!");
   });
@@ -55,7 +55,7 @@ describe("RegisterPage", () => {
     await wrapper.find('[data-testid="register-name-input"]').setValue("Abdul");
     await wrapper.find('[data-testid="register-email-input"]').setValue("abdul@del.org");
     await wrapper.find('[data-testid="register-password-input"]').setValue("pass123");
-    await wrapper.find('[data-testid="register-password-confirm-input"]').setValue("pass123");
+    await wrapper.find('[data-testid="register-confirm-password-input"]').setValue("pass123");
     await wrapper.find("form").trigger("submit");
 
     expect(registerSpy).toHaveBeenCalledWith("Abdul", "abdul@del.org", "pass123");

@@ -1,14 +1,13 @@
 <script>
   import useInput from "../../../hooks/useInput";
-  import { default as apiHelper } from "../../../helpers/apiHelper";
+  import apiHelper from "../../../helpers/apiHelper";
   import { showErrorDialog } from "../../../helpers/toolsHelper";
   import { navigate } from "../../../router";
 
   const { input: name, handleChange: handleName } = useInput("");
   const { input: email, handleChange: handleEmail } = useInput("");
   const { input: password, handleChange: handlePassword } = useInput("");
-  const { input: confirmPassword, handleChange: handleConfirmPassword } =
-    useInput("");
+  const { input: confirmPassword, handleChange: handleConfirmPassword } = useInput("");
 
   let loading = $state(false);
 
@@ -29,14 +28,14 @@
       });
 
       if (res.status === "success") {
-        // ✅ Navigate langsung, tanpa nunggu dialog
+        // Navigate langsung
         navigate("/auth/login");
       } else {
         await showErrorDialog(res.message || "Registrasi gagal");
+        loading = false;
       }
     } catch (err) {
       await showErrorDialog(err.message || "Terjadi kesalahan");
-    } finally {
       loading = false;
     }
   }
@@ -44,10 +43,7 @@
 
 <form onsubmit={handleSubmit} class="space-y-4">
   <div>
-    <label
-      for="register-name-input"
-      class="block text-sm font-medium text-slate-700 mb-1"
-    >
+    <label for="register-name-input" class="block text-sm font-medium text-slate-700 mb-1">
       Nama Lengkap
     </label>
     <input
@@ -62,12 +58,8 @@
       placeholder="Nama lengkap"
     />
   </div>
-
   <div>
-    <label
-      for="register-email-input"
-      class="block text-sm font-medium text-slate-700 mb-1"
-    >
+    <label for="register-email-input" class="block text-sm font-medium text-slate-700 mb-1">
       Email
     </label>
     <input
@@ -82,12 +74,8 @@
       placeholder="kamu@email.com"
     />
   </div>
-
   <div>
-    <label
-      for="register-password-input"
-      class="block text-sm font-medium text-slate-700 mb-1"
-    >
+    <label for="register-password-input" class="block text-sm font-medium text-slate-700 mb-1">
       Password
     </label>
     <input
@@ -103,12 +91,8 @@
       placeholder="Minimal 6 karakter"
     />
   </div>
-
   <div>
-    <label
-      for="register-confirm-password-input"
-      class="block text-sm font-medium text-slate-700 mb-1"
-    >
+    <label for="register-confirm-password-input" class="block text-sm font-medium text-slate-700 mb-1">
       Konfirmasi Password
     </label>
     <input
@@ -123,7 +107,6 @@
       placeholder="Ulangi password"
     />
   </div>
-
   <button
     id="register-submit-button"
     data-testid="register-submit-button"
@@ -133,14 +116,9 @@
   >
     {loading ? "Memproses..." : "Daftar"}
   </button>
-
   <p class="text-center text-sm text-slate-500">
     Sudah punya akun?
-    <button
-      type="button"
-      onclick={() => navigate("/auth/login")}
-      class="text-blue-600 font-semibold hover:underline"
-    >
+    <button type="button" onclick={() => navigate("/auth/login")} class="text-blue-600 font-semibold hover:underline">
       Masuk
     </button>
   </p>

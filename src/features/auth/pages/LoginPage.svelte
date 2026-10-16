@@ -1,6 +1,5 @@
 <script>
   import useInput from "../../../hooks/useInput";
-  import { authStore } from "../states/authStore";
   import apiHelper from "../../../helpers/apiHelper";
   import { showErrorDialog } from "../../../helpers/toolsHelper";
   import { navigate } from "../../../router";
@@ -21,30 +20,26 @@
 
       if (res.status !== "success") {
         await showErrorDialog(res.message || "Login gagal");
+        loading = false;
         return;
       }
 
       const d = res.data || {};
       const token =
-        d.accessToken ||
-        d.token ||
-        d.access_token ||
+        d.accessToken || d.token || d.access_token ||
         (d.data && (d.data.accessToken || d.data.token));
 
       if (!token) {
-        await showErrorDialog("Token tidak ditemukan di response");
+        await showErrorDialog("Token tidak ditemukan");
+        loading = false;
         return;
       }
 
-      // ✅ Pakai method dari default export
       apiHelper.putAccessToken(token);
-      authStore.setAuth({ email: $email }, token);
-
-      // ✅ Navigate LANGSUNG tanpa nunggu dialog
-      navigate("/");
+      // Navigate LANGSUNG, tanpa dialog
+      navigate("/", { replace: true });
     } catch (err) {
       await showErrorDialog(err.message || "Terjadi kesalahan");
-    } finally {
       loading = false;
     }
   }
@@ -52,10 +47,7 @@
 
 <form onsubmit={handleSubmit} class="space-y-4">
   <div>
-    <label
-      for="login-email-input"
-      class="block text-sm font-medium text-slate-700 mb-1"
-    >
+    <label for="login-email-input" class="block text-sm font-medium text-slate-700 mb-1">
       Email
     </label>
     <input
@@ -70,12 +62,8 @@
       placeholder="kamu@email.com"
     />
   </div>
-
   <div>
-    <label
-      for="login-password-input"
-      class="block text-sm font-medium text-slate-700 mb-1"
-    >
+    <label for="login-password-input" class="block text-sm font-medium text-slate-700 mb-1">
       Password
     </label>
     <input
@@ -90,7 +78,6 @@
       placeholder="••••••••"
     />
   </div>
-
   <button
     id="login-submit-button"
     data-testid="login-submit-button"
@@ -100,14 +87,9 @@
   >
     {loading ? "Memproses..." : "Masuk"}
   </button>
-
   <p class="text-center text-sm text-slate-500">
     Belum punya akun?
-    <button
-      type="button"
-      onclick={() => navigate("/auth/register")}
-      class="text-blue-600 font-semibold hover:underline"
-    >
+    <button type="button" onclick={() => navigate("/auth/register")} class="text-blue-600 font-semibold hover:underline">
       Daftar
     </button>
   </p>

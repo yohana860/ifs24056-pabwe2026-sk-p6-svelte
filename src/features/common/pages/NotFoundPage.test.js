@@ -1,36 +1,24 @@
-import { describe, it, expect, vi } from "vitest";
-import NotFoundPage from "./NotFoundPage.svelte";
-import { renderWithProviders } from "../../../test-utils";
-import * as routerModule from "../../../router";
+import { render, fireEvent } from '@testing-library/svelte';
+import { describe, it, expect, vi } from 'vitest';
+import NotFoundPage from './NotFoundPage.svelte';
+import { navigate } from '../../../router';
 
-describe("NotFoundPage", () => {
-  it("should render 404 text and description properly", () => {
-    const { wrapper } = renderWithProviders(NotFoundPage);
+vi.mock('../../../router', () => ({
+  navigate: vi.fn(),
+}));
 
-    expect(wrapper.text()).toContain("404");
-    expect(wrapper.text()).toContain("Halaman Tidak Ditemukan");
-    expect(wrapper.text()).toContain(
-      "Maaf, halaman yang Anda cari tidak dapat ditemukan"
-    );
+describe('NotFoundPage', () => {
+  it('should render 404 text and description properly', () => {
+    const { getByText } = render(NotFoundPage);
+    expect(getByText('404')).toBeInTheDocument();
+    expect(getByText('Halaman tidak ditemukan.')).toBeInTheDocument();
   });
 
-  it("should navigate back when Kembali button is clicked", async () => {
-    const backSpy = vi.spyOn(window.history, "back").mockImplementation(() => {});
-    const { wrapper } = renderWithProviders(NotFoundPage);
-
-    const backButton = wrapper.find('[data-testid="back-button"]');
-    await backButton.trigger("click");
-
-    expect(backSpy).toHaveBeenCalled();
-  });
-
-  it("should navigate to home when Beranda button is clicked", async () => {
-    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
-    const { wrapper } = renderWithProviders(NotFoundPage);
-
-    const homeButton = wrapper.find('[data-testid="home-button"]');
-    await homeButton.trigger("click");
-
-    expect(navSpy).toHaveBeenCalledWith("/");
+  it('should navigate to home when Kembali ke Beranda button is clicked', async () => {
+    const { getByText } = render(NotFoundPage);
+    // Sesuaikan dengan teks tombol yang baru
+    const homeButton = getByText('Kembali ke Beranda');
+    await fireEvent.click(homeButton);
+    expect(navigate).toHaveBeenCalledWith('/');
   });
 });

@@ -12,6 +12,6 @@
         Kumpulkan dan bagikan semua tautan pentingmu dalam satu halaman
       </p>
     </header>
-    {@render children()}
+    {@render children?.()}
   </div>
 </main>

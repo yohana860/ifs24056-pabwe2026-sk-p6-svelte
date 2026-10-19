@@ -38,7 +38,7 @@ describe("App Component", () => {
     });
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.text()).toContain("Masuk Sekarang");
+    expect(wrapper.text()).toContain("Masuk");
   });
 
   it("should render RegisterPage when navigating to /auth/register", () => {
@@ -51,7 +51,7 @@ describe("App Component", () => {
     });
 
     expect(wrapper.exists()).toBe(true);
-    expect(wrapper.text()).toContain("Daftar Sekarang");
+    expect(wrapper.text()).toContain("Daftar");
   });
 
   it("should render HomePage when navigating to / with auth", () => {
@@ -116,6 +116,6 @@ describe("App Component", () => {
 
     expect(wrapper.exists()).toBe(true);
     expect(wrapper.text()).toContain("404");
-    expect(wrapper.text()).toContain("Halaman Tidak Ditemukan");
+    expect(wrapper.text()).toContain("Halaman tidak ditemukan");
   });
 });

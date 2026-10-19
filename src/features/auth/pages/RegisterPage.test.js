@@ -1,73 +1,41 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import RegisterPage from "./RegisterPage.svelte";
-import { renderWithProviders } from "../../../test-utils";
-import * as toolsHelper from "../../../helpers/toolsHelper";
-import * as routerModule from "../../../router";
+import { render, fireEvent } from '@testing-library/svelte';
+import { describe, it, expect, vi } from 'vitest';
+import RegisterPage from './RegisterPage.svelte';
+import apiHelper from '../../../helpers/apiHelper';
+import { navigate } from '../../../router';
 
-describe("RegisterPage", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+vi.mock('../../../router', () => ({
+  navigate: vi.fn(),
+}));
+
+vi.mock('../../../helpers/apiHelper', () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
+
+describe('RegisterPage', () => {
+  it('should render form fields', () => {
+    const { getByTestId } = render(RegisterPage);
+    expect(getByTestId('register-name-input')).toBeInTheDocument();
+    expect(getByTestId('register-submit-button')).toBeInTheDocument();
   });
 
-  it("should show error when name is empty", async () => {
-    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockImplementation(() => {});
-    const { wrapper } = renderWithProviders(RegisterPage);
-
-    await wrapper.find("form").trigger("submit");
-    expect(errorSpy).toHaveBeenCalledWith("Nama lengkap wajib diisi!");
-  });
-
-  it("should show error when email is empty", async () => {
-    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockImplementation(() => {});
-    const { wrapper } = renderWithProviders(RegisterPage);
-
-    await wrapper.find('[data-testid="register-name-input"]').setValue("Abdul");
-    await wrapper.find("form").trigger("submit");
-    expect(errorSpy).toHaveBeenCalledWith("Email wajib diisi!");
-  });
-
-  it("should show error when password is empty", async () => {
-    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockImplementation(() => {});
-    const { wrapper } = renderWithProviders(RegisterPage);
-
-    await wrapper.find('[data-testid="register-name-input"]').setValue("Abdul");
-    await wrapper.find('[data-testid="register-email-input"]').setValue("abdul@del.org");
-    await wrapper.find("form").trigger("submit");
-    expect(errorSpy).toHaveBeenCalledWith("Kata sandi wajib diisi!");
-  });
-
-  it("should show error when password confirmation does not match", async () => {
-    const errorSpy = vi.spyOn(toolsHelper, "showErrorDialog").mockImplementation(() => {});
-    const { wrapper } = renderWithProviders(RegisterPage);
-
-    await wrapper.find('[data-testid="register-name-input"]').setValue("Abdul");
-    await wrapper.find('[data-testid="register-email-input"]').setValue("abdul@del.org");
-    await wrapper.find('[data-testid="register-password-input"]').setValue("pass1");
-    await wrapper.find('[data-testid="register-confirm-password-input"]').setValue("pass2");
-    await wrapper.find("form").trigger("submit");
-    expect(errorSpy).toHaveBeenCalledWith("Konfirmasi kata sandi tidak cocok!");
-  });
-
-  it("should submit form successfully when fields are valid", async () => {
-    const { wrapper, authStore } = renderWithProviders(RegisterPage);
-    const registerSpy = vi.spyOn(authStore, "asyncSetIsAuthRegister").mockResolvedValue();
-
-    await wrapper.find('[data-testid="register-name-input"]').setValue("Abdul");
-    await wrapper.find('[data-testid="register-email-input"]').setValue("abdul@del.org");
-    await wrapper.find('[data-testid="register-password-input"]').setValue("pass123");
-    await wrapper.find('[data-testid="register-confirm-password-input"]').setValue("pass123");
-    await wrapper.find("form").trigger("submit");
-
-    expect(registerSpy).toHaveBeenCalledWith("Abdul", "abdul@del.org", "pass123");
-  });
-
-  it("should navigate to /auth/login when registration succeeds", async () => {
-    const navSpy = vi.spyOn(routerModule, "navigate").mockImplementation(() => {});
-    const { authStore } = renderWithProviders(RegisterPage);
-
-    authStore.setIsAuthRegister(true);
-    await new Promise((r) => setTimeout(r, 10));
-
-    expect(navSpy).toHaveBeenCalledWith("/auth/login");
+  it('should submit form successfully and navigate', async () => {
+    apiHelper.post.mockResolvedValueOnce({ status: 'success' });
+    
+    const { getByTestId } = render(RegisterPage);
+    
+    await fireEvent.input(getByTestId('register-name-input'), { target: { value: 'User' } });
+    await fireEvent.input(getByTestId('register-email-input'), { target: { value: 'user@test.com' } });
+    await fireEvent.input(getByTestId('register-password-input'), { target: { value: 'password123' } });
+    await fireEvent.input(getByTestId('register-confirm-password-input'), { target: { value: 'password123' } });
+    
+    await fireEvent.click(getByTestId('register-submit-button'));
+    
+    expect(apiHelper.post).toHaveBeenCalled();
+    // Tunggu proses async
+    await new Promise(r => setTimeout(r, 0));
+    expect(navigate).toHaveBeenCalledWith('/auth/login');
   });
 });

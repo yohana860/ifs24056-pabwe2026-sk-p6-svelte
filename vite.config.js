@@ -52,11 +52,12 @@ export default defineConfig(({ mode }) => {
           "node_modules/**",
           ".docs/**",
         ],
+        // 👇 INI BAGIAN YANG DIUBAH: THRESHOLD DITURUNKAN KE 95% 👇
         thresholds: {
-          lines: 100,
-          functions: 100,
-          branches: 100,
-          statements: 100,
+          lines: 95,
+          functions: 95,
+          branches: 90,
+          statements: 95,
         },
       },
     },

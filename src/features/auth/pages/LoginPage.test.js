@@ -1,8 +1,9 @@
 import { render, fireEvent, waitFor } from '@testing-library/svelte';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import LoginPage from './LoginPage.svelte';
 import apiHelper from '../../../helpers/apiHelper';
 import { navigate } from '../../../router';
+import { showErrorDialog } from '../../../helpers/toolsHelper';
 
 vi.mock('../../../router', () => ({ navigate: vi.fn() }));
 vi.mock('../../../helpers/apiHelper', () => ({
@@ -11,6 +12,10 @@ vi.mock('../../../helpers/apiHelper', () => ({
 vi.mock('../../../helpers/toolsHelper', () => ({ showErrorDialog: vi.fn() }));
 
 describe('LoginPage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('should render form', () => {
     const { getByTestId } = render(LoginPage);
     expect(getByTestId('login-email-input')).toBeInTheDocument();
@@ -20,11 +25,9 @@ describe('LoginPage', () => {
     apiHelper.post.mockResolvedValueOnce({ status: 'success', data: { accessToken: 'token' } });
     const { getByTestId } = render(LoginPage);
     
-    // 1. ISI FORM DULU agar validasi HTML5 tidak memblokir submit
-    await fireEvent.input(getByTestId('login-email-input'), { target: { value: 'test@delcom.org' } });
-    await fireEvent.input(getByTestId('login-password-input'), { target: { value: 'password123' } });
+    await fireEvent.input(getByTestId('login-email-input'), { target: { value: 'a@a.com' } });
+    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '123' } });
     
-    // 2. Baru klik submit
     await fireEvent.click(getByTestId('login-submit-button'));
     
     await waitFor(() => {
@@ -38,7 +41,7 @@ describe('LoginPage', () => {
     const { getByTestId } = render(LoginPage);
     
     await fireEvent.input(getByTestId('login-email-input'), { target: { value: 'a@a.com' } });
-    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '1' } });
+    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '123' } });
     await fireEvent.click(getByTestId('login-submit-button'));
     
     await waitFor(() => {
@@ -51,7 +54,7 @@ describe('LoginPage', () => {
     const { getByTestId } = render(LoginPage);
     
     await fireEvent.input(getByTestId('login-email-input'), { target: { value: 'a@a.com' } });
-    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '1' } });
+    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '123' } });
     await fireEvent.click(getByTestId('login-submit-button'));
     
     await waitFor(() => {
@@ -64,7 +67,7 @@ describe('LoginPage', () => {
     const { getByTestId } = render(LoginPage);
     
     await fireEvent.input(getByTestId('login-email-input'), { target: { value: 'a@a.com' } });
-    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '1' } });
+    await fireEvent.input(getByTestId('login-password-input'), { target: { value: '123' } });
     await fireEvent.click(getByTestId('login-submit-button'));
     
     await waitFor(() => {

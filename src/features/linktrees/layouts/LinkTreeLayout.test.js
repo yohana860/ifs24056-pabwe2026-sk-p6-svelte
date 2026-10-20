@@ -63,11 +63,11 @@ describe('LinkTreeLayout', () => {
     
     await waitFor(() => expect(getByTestId('toggle-sidebar-btn')).toBeInTheDocument());
     
-    // Toggle sidebar
     await fireEvent.click(getByTestId('toggle-sidebar-btn'));
     
-    // Trigger logout
+    // Memaksa logout (menutupi baris 27-31)
     authStore.setIsAuthLogout(true);
+    
     await waitFor(() => {
       expect(navigate).toHaveBeenCalledWith('/auth/login');
     });

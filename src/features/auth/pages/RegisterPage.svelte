@@ -4,17 +4,19 @@
   import { showErrorDialog } from "../../../helpers/toolsHelper";
   import { navigate } from "../../../router";
 
-  const { input: name, handleChange: handleName } = useInput("");
-  const { input: email, handleChange: handleEmail } = useInput("");
-  const { input: password, handleChange: handlePassword } = useInput("");
-  const { input: confirmPassword, handleChange: handleConfirmPassword } = useInput("");
+  // Gunakan struktur Array sesuai hook milikmu
+  const [name, handleName] = useInput("");
+  const [email, handleEmail] = useInput("");
+  const [password, handlePassword] = useInput("");
+  const [confirmPassword, handleConfirmPassword] = useInput("");
 
   let loading = $state(false);
 
   async function handleSubmit(event) {
     event.preventDefault();
 
-    if ($password !== $confirmPassword) {
+    // Akses nilai menggunakan .value
+    if (password.value !== confirmPassword.value) {
       await showErrorDialog("Konfirmasi password tidak cocok");
       return;
     }
@@ -22,13 +24,12 @@
     loading = true;
     try {
       const res = await apiHelper.post("/auth/register", {
-        name: $name,
-        email: $email,
-        password: $password,
+        name: name.value,
+        email: email.value,
+        password: password.value,
       });
 
       if (res.status === "success") {
-        // Navigate langsung
         navigate("/auth/login");
       } else {
         await showErrorDialog(res.message || "Registrasi gagal");
@@ -43,41 +44,35 @@
 
 <form onsubmit={handleSubmit} class="space-y-4">
   <div>
-    <label for="register-name-input" class="block text-sm font-medium text-slate-700 mb-1">
-      Nama Lengkap
-    </label>
+    <label for="register-name-input" class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
     <input
       id="register-name-input"
       data-testid="register-name-input"
       name="name"
       type="text"
       required
-      value={$name}
+      value={name.value}
       oninput={handleName}
       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       placeholder="Nama lengkap"
     />
   </div>
   <div>
-    <label for="register-email-input" class="block text-sm font-medium text-slate-700 mb-1">
-      Email
-    </label>
+    <label for="register-email-input" class="block text-sm font-medium text-slate-700 mb-1">Email</label>
     <input
       id="register-email-input"
       data-testid="register-email-input"
       name="email"
       type="email"
       required
-      value={$email}
+      value={email.value}
       oninput={handleEmail}
       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       placeholder="kamu@email.com"
     />
   </div>
   <div>
-    <label for="register-password-input" class="block text-sm font-medium text-slate-700 mb-1">
-      Password
-    </label>
+    <label for="register-password-input" class="block text-sm font-medium text-slate-700 mb-1">Password</label>
     <input
       id="register-password-input"
       data-testid="register-password-input"
@@ -85,23 +80,21 @@
       type="password"
       required
       minlength="6"
-      value={$password}
+      value={password.value}
       oninput={handlePassword}
       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       placeholder="Minimal 6 karakter"
     />
   </div>
   <div>
-    <label for="register-confirm-password-input" class="block text-sm font-medium text-slate-700 mb-1">
-      Konfirmasi Password
-    </label>
+    <label for="register-confirm-password-input" class="block text-sm font-medium text-slate-700 mb-1">Konfirmasi Password</label>
     <input
       id="register-confirm-password-input"
       data-testid="register-confirm-password-input"
       name="confirmPassword"
       type="password"
       required
-      value={$confirmPassword}
+      value={confirmPassword.value}
       oninput={handleConfirmPassword}
       class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
       placeholder="Ulangi password"

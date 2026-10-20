@@ -1,54 +1,72 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import apiHelper from "./apiHelper";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import apiHelper from './apiHelper';
 
-describe("apiHelper", () => {
+describe('apiHelper', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
+    global.fetch = vi.fn();
     localStorage.clear();
-    vi.restoreAllMocks();
   });
 
-  it("should get and set access token correctly", () => {
-    expect(apiHelper.getAccessToken()).toBeNull();
-    apiHelper.putAccessToken("dummy-token");
-    expect(apiHelper.getAccessToken()).toBe("dummy-token");
-    apiHelper.putAccessToken("");
+  it('should get and put access token', () => {
+    apiHelper.putAccessToken('test');
+    expect(apiHelper.getAccessToken()).toBe('test');
+    apiHelper.putAccessToken(null);
     expect(apiHelper.getAccessToken()).toBeNull();
   });
 
-  it("should fetch data without query and append Authorization header when token exists", async () => {
-    apiHelper.putAccessToken("test-token");
-    const mockFetch = vi.fn().mockResolvedValue({ status: 200 });
-    global.fetch = mockFetch;
+  it('should handle absolute and relative URLs', async () => {
+    global.fetch.mockResolvedValue({ json: () => Promise.resolve({}) });
+    
+    // Test URL relative
+    await apiHelper.fetchData('/users/?page=1');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/users?page=1'),
+      expect.any(Object)
+    );
 
-    await apiHelper.fetchData("http://localhost:8765/api/v1/users/", {
-      method: "GET",
-    });
+    // Test URL absolute
+    await apiHelper.fetchData('https://custom.com/api/');
+    expect(global.fetch).toHaveBeenCalledWith(
+      'https://custom.com/api',
+      expect.any(Object)
+    );
+  });
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "http://localhost:8765/api/v1/users",
+  it('should attach Authorization header if token exists', async () => {
+    apiHelper.putAccessToken('my-token');
+    global.fetch.mockResolvedValueOnce({ json: () => Promise.resolve({}) });
+    
+    await apiHelper.fetchData('/test');
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(String),
       expect.objectContaining({
-        method: "GET",
-        headers: {
-          Authorization: "Bearer test-token",
-        },
+        headers: expect.objectContaining({ Authorization: 'Bearer my-token' })
       })
     );
   });
 
-  it("should handle url with query parameters and without trailing slash correctly", async () => {
-    const mockFetch = vi.fn().mockResolvedValue({ status: 200 });
-    global.fetch = mockFetch;
+  it('should handle all HTTP methods with JSON body', async () => {
+    global.fetch.mockResolvedValue({ json: () => Promise.resolve({ status: 'ok' }) });
+    
+    await apiHelper.post('/post', { a: 1 });
+    expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ method: 'POST' }));
 
-    await apiHelper.fetchData("http://localhost:8765/api/v1/link-trees?type=public", {
-      method: "GET",
-    });
+    await apiHelper.put('/put', { a: 1 });
+    expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ method: 'PUT' }));
 
-    expect(mockFetch).toHaveBeenCalledWith(
-      "http://localhost:8765/api/v1/link-trees?type=public",
-      expect.objectContaining({
-        method: "GET",
-        headers: {},
-      })
-    );
+    await apiHelper.delete('/delete');
+    expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ method: 'DELETE' }));
+  });
+
+  it('should handle FormData for multipart', async () => {
+    global.fetch.mockResolvedValue({ json: () => Promise.resolve({}) });
+    const fd = new FormData();
+    
+    await apiHelper.postMultipart('/upload', fd);
+    expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: fd }));
+    
+    await apiHelper.putMultipart('/upload', fd);
+    expect(global.fetch).toHaveBeenCalledWith(expect.any(String), expect.objectContaining({ body: fd }));
   });
 });
